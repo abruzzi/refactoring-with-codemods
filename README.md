@@ -44,7 +44,7 @@ By using this approach, codemods ensure that changes are applied consistently ac
 
 If we visualise the process a bit, it would be something like this:
 
-![codemod-process.png](Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/codemod-process.png)
+![codemod-process.png](images/codemod-process.png)
 
 *Now that we have a basic understanding of what codemods are, let’s look at the tools available to help you create and run them.*
 
@@ -234,7 +234,7 @@ By automating such refactoring tasks, codemods ensure that your codebase remains
 
 Let’s consider a more complex case. Suppose you’re working with a design system that includes an `Avatar` component. This component is tightly coupled to a `Tooltip`. Whenever a user passes a `name` prop into `Avatar`, it automatically wraps the avatar with a tooltip. 
 
-![avatar-refactoring-trans.png](Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/avatar-refactoring-trans.png)
+![avatar-refactoring-trans.png](images/avatar-refactoring.png)
 
 This coupling can limit flexibility and force developers to include unnecessary `Tooltip` dependencies even when they don't want to use them.
 
@@ -386,7 +386,7 @@ And for the `createTooltipElement`, we use jscodeshift API to create a new JSX n
 
 I can easily test out the input and output in [Hypermod](https://www.hypermod.io/):
 
-![Screenshot 2024-09-13 at 4.18.19 PM.png](Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/Screenshot_2024-09-13_at_4.18.19_PM.png)
+![hypermod.png](images/hypermod.png)
 
 This codemod searches for all instances of `Avatar` in the codebase. If a `name` prop is found, the codemod removes the `name` prop from `Avatar`, wraps the `Avatar` inside a `Tooltip`, and passes the `name` prop to the `Tooltip`.
 
@@ -488,11 +488,11 @@ In this pipeline, the transformation:
 2. Cleans up the unused `import` statement.
 3. Removes the `convertOld` function since it’s no longer used.
 
-![Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/codemod-process-transforms.png](Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/codemod-process-transforms.png)
+![codemod-process-transforms-1.png](images/codemod-process-transforms-1.png)
 
 You could also extract additional codemods as needed, combining them in various orders depending on the desired outcome.
 
-![Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/codemod-process-transforms-2.png](Refactoring%20with%20Codemods%20to%20Automate%20API%20Changes%204836df67b2a54c89be8f40406da0fa9a/codemod-process-transforms-2.png)
+![codemod-process-transforms-2.png](images/codemod-process-transforms-2.png)
 
 ### The `createTransformer` Function
 
@@ -530,3 +530,7 @@ By composing smaller transformations, you ensure that your codemods remain flexi
 ## Codemods in Other Languages
 
 While this example focuses on JavaScript and JSX using **jscodeshift**, codemods can also be applied to other languages. For instance, **JavaParser** ([https://javaparser.org/](https://javaparser.org/)) offers a similar mechanism in Java, using AST manipulation to refactor Java code. This can be useful when making breaking API changes or refactoring large Java codebases in a structured, automated way.
+
+## Conclusion
+
+...
