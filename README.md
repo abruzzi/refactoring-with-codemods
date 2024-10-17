@@ -1,6 +1,6 @@
 # Refactoring with Codemods to Automate API Changes
 
-*Codemods are powerful tools that allow developers to automate code refactoring, particularly when handling breaking changes to APIs. By parsing code into an Abstract Syntax Tree (AST) and applying transformations, codemods enable precise, large-scale changes with minimal manual effort. This article delves into how codemods can help library developers manage breaking API changes, improve code hygiene, and reduce technical debt in large or distributed codebases. We’ll walk through practical examples, from simple feature toggle removals to complex React component refactorings, and discuss potential downsides of using codemods along with complementary techniques to mitigate these challenges.*
+*Refactoring is something developers do all the time—making code easier to understand, maintain, and extend. While IDEs can handle simple refactorings with just a few keystrokes, things get tricky when you need to apply changes across large or distributed codebases, especially those you don’t fully control. That’s where codemods come in. By using Abstract Syntax Trees (AST), codemods allow you to automate large-scale code changes with precision and minimal effort, making them especially useful when dealing with breaking API changes. This article looks at how codemods can help manage these challenges, with practical examples like removing feature toggles or refactoring complex React components. We’ll also discuss potential pitfalls and how to avoid them when using codemods at scale.*
 
 ## Introduction
 
