@@ -266,7 +266,25 @@ Let’s break down the transformation into smaller tasks:
     - Add `Avatar` as a child of the `Tooltip`.
     - Replace the original `Avatar` node with the new `Tooltip`.
 
-To begin, we’ll find all instances of Avatar (I’ll omit the tests, but you should write comparison tests first). Similar to the `featureToggle` example, we can use `root.find` with search criteria to locate all Avatar nodes:
+To begin, we’ll find all instances of Avatar (I’ll omit some of the tests, but you should write comparison tests first). 
+
+```tsx
+defineInlineTest(
+    { default: transform, parser: "tsx" },
+    {},
+    `
+    <Avatar name="Juntao Qiu" image="/juntao.qiu.avatar.png" />
+    `,
+    `
+    <Tooltip content="Juntao Qiu">
+      <Avatar image="/juntao.qiu.avatar.png" />
+    </Tooltip>
+    `,
+    "wrap avatar with tooltip when name is provided"
+  );
+```
+
+Similar to the `featureToggle` example, we can use `root.find` with search criteria to locate all Avatar nodes:
 
 ```tsx
 root
@@ -362,7 +380,11 @@ In situations where we couldn't confidently automate the upgrade, we inserted co
 
 As you can see, there are plenty of edge cases to handle, especially in codebases beyond your control—such as external dependencies. This complexity means that using codemods requires careful supervision and a review of the results.
 
-However, if your codebase has standardization tools in place, such as a linter that enforces a particular coding style, you can leverage these tools to reduce edge cases. By enforcing a consistent structure, tools like linters help narrow down the variations in code, making the transformation easier and minimizing unexpected issues.
+However, if your codebase has standardization tools in place, such as a linter that enforces a particular coding style, you can leverage these tools to reduce edge cases. By enforcing a consistent structure, tools like linters help narrow down the variations in code, making the transformation easier and minimizing unexpected issues. 
+
+For instance, you could use linting rules to restrict certain patterns, such as avoiding nested conditional (ternary) operators or enforcing named exports over default exports. These rules help streamline the codebase, making codemods more predictable and effective.
+
+Additionally, breaking down complex transformations into smaller, more manageable ones allows you to tackle individual issues more precisely. As we'll soon see, composing smaller codemods can make handling complex changes more feasible.
 
 ### Extracting Reusable Utilities
 
@@ -490,7 +512,11 @@ if (!featureToggle('feature-new-product-list') && someOtherLogic) {
 }
 ```
 
-Over time, you might develop a collection of reusable, smaller transforms, which can help mitigate the pain of handling tricky edge cases.
+Over time, you might build up a collection of reusable, smaller transforms, which can greatly ease the process of handling tricky edge cases. This approach proved highly effective in our work refining design system components. Once we converted one package—such as the button component—we had a few reusable transforms defined, like adding comments at the start of functions, removing deprecated props, or creating aliases when a package is already imported above.
+
+Each of these smaller transforms can be tested and used independently or combined for more complex transformations, which speeds up subsequent conversions significantly. As a result, our refinement work became more efficient, and these generic codemods are now applicable to other internal and even external React codebases.
+
+Since each transform is relatively standalone, you can fine-tune them without affecting other transforms or the more complex, composed ones. For instance, you might re-implement a transform to improve performance—like reducing the number of node-finding rounds—and with comprehensive test coverage, you can do this confidently and safely.
 
 ## Codemods in Other Languages
 
