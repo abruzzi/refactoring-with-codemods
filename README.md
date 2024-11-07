@@ -66,16 +66,16 @@ Let’s start with a simple yet practical example to demonstrate the power of co
 For instance, consider the following code:
 
 ```tsx
-const data = featureToggle('feature-x') ? { name: 'Feature X' } : undefined;
+const data = featureToggle('feature-new-product-list') ? { name: 'Product' } : undefined;
 ```
 
 Once the feature is fully released and no longer needs a toggle, this can be simplified to:
 
 ```tsx
-const data = { name: 'Feature X' };
+const data = { name: 'Product' };
 ```
 
-The task involves finding all instances of `featureToggle` in the codebase, checking whether the toggle refers to `feature-x`, and removing the conditional logic surrounding it. At the same time, other feature toggles (like `feature-y`, which may still be in development) should remain untouched. The codemod needs to *understand* the structure of the code to apply changes selectively.
+The task involves finding all instances of `featureToggle` in the codebase, checking whether the toggle refers to `feature-new-product-list`, and removing the conditional logic surrounding it. At the same time, other feature toggles (like `feature-search-result-refinement`, which may still be in development) should remain untouched. The codemod needs to *understand* the structure of the code to apply changes selectively.
 
 ### Understanding the AST
 
@@ -85,23 +85,23 @@ The image below shows the syntax tree in terms of ECMAScript syntax. It contains
 
 ![ast-feature-toggle.png](images/ast-feature-toggle.png)
 
-In this AST representation, the variable `data` is assigned using a **ConditionalExpression**. The **test** part of the expression calls `featureToggle('feature-x')`. If the test returns `true`, the **consequent** branch assigns `{ name: 'Feature X' }` to `data`. If `false`, the **alternate** branch assigns `undefined`.
+In this AST representation, the variable `data` is assigned using a **ConditionalExpression**. The **test** part of the expression calls `featureToggle('feature-new-product-list')`. If the test returns `true`, the **consequent** branch assigns `{ name: 'Product' }` to `data`. If `false`, the **alternate** branch assigns `undefined`.
 
 For a task with clear input and output, I prefer writing tests first, then implementing the codemod. Adding a few variations (like calling `featureToggle` inside an `if` statement) will ensure the codemod covers multiple cases. This approach aligns well with **Test-Driven Development (TDD)**, even if you don’t practice TDD regularly. Knowing exactly what the transformation's inputs and outputs are before coding improves safety and efficiency, especially when tweaking codemods.
 
 With jscodeshift, you can write tests to verify how the codemod behaves:
 
 ```tsx
-const transform = require("../remove-feature-toggle-x");
+const transform = require("../remove-feature-new-product-list");
 
 defineInlineTest(
   transform,
   {},
   `
-  const data = featureToggle('feature-x') ? {name: 'Feature X'} : undefined;
+  const data = featureToggle('feature-new-product-list') ? { name: 'Product' } : undefined;
   `,
   `
-  const data = {name: 'Feature X'};
+  const data = { name: 'Product' };
   `,
   "delete the surrounding conditional operator"
 );
@@ -129,7 +129,7 @@ This function reads the file into a tree and uses jscodeshift’s API to query, 
 Now we can start implementing the transform steps:
 
 1. Find all instances of `featureToggle`.
-2. Verify that the argument passed is `'feature-x'`.
+2. Verify that the argument passed is `'feature-new-product-list'`.
 3. Replace the entire conditional expression with the **consequent** part, effectively removing the toggle.
 
 Here’s how we achieve this using `jscodeshift`:
@@ -139,12 +139,12 @@ module.exports = function (fileInfo, api, options) {
   const j = api.jscodeshift;
   const root = j(fileInfo.source);
 
-  // Find ConditionalExpression where the test is featureToggle('feature-x')
+  // Find ConditionalExpression where the test is featureToggle('feature-new-product-list')
   root
     .find(j.ConditionalExpression, {
       test: {
         callee: { name: "featureToggle" },
-        arguments: [{ value: "feature-x" }],
+        arguments: [{ value: "feature-new-product-list" }],
       },
     })
     .forEach((path) => {
@@ -157,12 +157,12 @@ module.exports = function (fileInfo, api, options) {
 ```
 
 The codemod above:
-- Finds `ConditionalExpression` nodes where the test calls `featureToggle('feature-x')`.
-- Replaces the entire conditional expression with the **consequent** (i.e., `{ name: 'Feature X' }`), removing the toggle logic and leaving simplified code behind.
+- Finds `ConditionalExpression` nodes where the test calls `featureToggle('feature-new-product-list')`.
+- Replaces the entire conditional expression with the **consequent** (i.e., `{ name: 'Product' }`), removing the toggle logic and leaving simplified code behind.
 
 This example demonstrates how easy it is to create a useful transformation and apply it to a large codebase, significantly reducing manual effort.
 
-You’ll need to write more test cases to handle variations like `if-else` statements, logical expressions (e.g., `!featureToggle('feature-x')`), and so on to make the codemod robust in real-world scenarios.
+You’ll need to write more test cases to handle variations like `if-else` statements, logical expressions (e.g., `!featureToggle('feature-new-product-list')`), and so on to make the codemod robust in real-world scenarios.
 
 Once the codemod is ready, you can test it out on a target codebase, such as the one you're working on. jscodeshift provides a command-line tool that you can use to apply the codemod and report the results.
 
@@ -312,10 +312,10 @@ A simple text search for `Avatar` won’t work in this case. You’ll need to de
 
 Another example arises when dealing with `Tooltip` imports. If the file already imports `Tooltip` but uses an alias, the codemod must detect that alias and apply the changes accordingly. You can't assume that the component named `Tooltip` is always the one you’re looking for.
 
-In the **feature toggle** example, someone might use `if(featureToggle('feature-x'))`, or assign the result of the toggle function to a variable before using it:
+In the **feature toggle** example, someone might use `if(featureToggle('feature-new-product-list'))`, or assign the result of the toggle function to a variable before using it:
 
 ```tsx
-const shouldEnableNewFeature = featureToggle('feature-x');
+const shouldEnableNewFeature = featureToggle('feature-new-product-list');
 
 if (shouldEnableNewFeature) {
   //...
@@ -325,7 +325,7 @@ if (shouldEnableNewFeature) {
 They might even use the toggle with other conditions or apply logical negation, making the logic more complex:
 
 ```tsx
-const shouldEnableNewFeature = featureToggle('feature-x');
+const shouldEnableNewFeature = featureToggle('feature-new-product-list');
 
 if (!shouldEnableNewFeature && someOtherLogic) {
   //...
@@ -410,10 +410,10 @@ import { removeUnusedFunction } from "./remove-unused-function";
 
 import { createTransformer } from "./utils";
 
-const removeFeatureConvertNew = removeFeatureToggle("feature-convert-new");
+const removeFeatureNewProductList = removeFeatureToggle("feature-new-product-list");
 
 const transform = createTransformer([
-  removeFeatureConvertNew,
+  removeFeatureNewProductList,
   removeUnusedImport,
   removeUnusedFunction,
 ]);
@@ -422,7 +422,7 @@ export default transform;
 ```
 
 In this pipeline, the transformations work as follows:
-1. Remove the `feature-convert-new` toggle.
+1. Remove the `feature-new-product-list` toggle.
 2. Clean up the unused `import` statement.
 3. Remove the `convertOld` function since it’s no longer used.
 
@@ -457,7 +457,7 @@ export { createTransformer };
 For example, you could have a transform function that inlines expressions assigning the feature toggle call to a variable, so in later transforms you don’t have to worry about those cases anymore:
 
 ```tsx
-const shouldEnableNewFeature = featureToggle('feature-x');
+const shouldEnableNewFeature = featureToggle('feature-new-product-list');
 
 if (!shouldEnableNewFeature && someOtherLogic) {
   //...
@@ -467,7 +467,7 @@ if (!shouldEnableNewFeature && someOtherLogic) {
 Becomes this:
 
 ```tsx
-if (!featureToggle('feature-x') && someOtherLogic) {
+if (!featureToggle('feature-new-product-list') && someOtherLogic) {
   //...
 }
 ```
@@ -482,12 +482,12 @@ While the examples we’ve explored so far focus on JavaScript and JSX using **j
 
 JavaParser can be useful for making breaking API changes or refactoring large Java codebases in a structured, automated way.
 
-Assume we have the following code in `FeatureToggleExample.java`, which checks the toggle `feature-x` and branches accordingly:
+Assume we have the following code in `FeatureToggleExample.java`, which checks the toggle `feature-new-product-list` and branches accordingly:
 
 ```java
 public class FeatureToggleExample {
     public void execute() {
-        if (FeatureToggle.isEnabled("feature-x")) {
+        if (FeatureToggle.isEnabled("feature-new-product-list")) {
           newFeature();
         } else {
           oldFeature();
