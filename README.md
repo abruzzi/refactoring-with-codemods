@@ -87,11 +87,13 @@ The image below shows the syntax tree in terms of ECMAScript syntax. It contains
 
 In this AST representation, the variable `data` is assigned using a **ConditionalExpression**. The **test** part of the expression calls `featureToggle('feature-new-product-list')`. If the test returns `true`, the **consequent** branch assigns `{ name: 'Product' }` to `data`. If `false`, the **alternate** branch assigns `undefined`.
 
-For a task with clear input and output, I prefer writing tests first, then implementing the codemod. Adding a few variations (like calling `featureToggle` inside an `if` statement) will ensure the codemod covers multiple cases. This approach aligns well with **Test-Driven Development (TDD)**, even if you don’t practice TDD regularly. Knowing exactly what the transformation's inputs and outputs are before coding improves safety and efficiency, especially when tweaking codemods.
+For a task with clear input and output, I prefer writing tests first, then implementing the codemod. I start by defining a negative case to ensure we don’t accidentally change things we want to leave untouched, followed by a real case that performs the actual conversion. I begin with a simple scenario, implement it, then add a variation (like checking if featureToggle is called inside an if statement), implement that case, and ensure all tests pass.
+
+This approach aligns well with **Test-Driven Development (TDD)**, even if you don’t practice TDD regularly. Knowing exactly what the transformation's inputs and outputs are before coding improves safety and efficiency, especially when tweaking codemods.
 
 With jscodeshift, you can write tests to verify how the codemod behaves:
 
-```tsx
+```ts
 const transform = require("../remove-feature-new-product-list");
 
 defineInlineTest(
@@ -103,11 +105,27 @@ defineInlineTest(
   `
   const data = { name: 'Product' };
   `,
-  "delete the surrounding conditional operator"
+  "delete the toggle feature-new-product-list in conditional operator"
 );
 ```
 
 The `defineInlineTest` function from jscodeshift allows you to define the input, expected output, and a string describing the test's intent. Now, running the test with a normal `jest` command will fail because the codemod isn’t written yet.
+
+The corresponding negative case would ensure the code remains unchanged for other feature toggles:
+
+```ts
+defineInlineTest(
+  transform,
+  {},
+  `
+  const data = featureToggle('feature-search-result-refinement') ? { name: 'Product' } : undefined;
+  `,
+  `
+  const data = featureToggle('feature-search-result-refinement') ? { name: 'Product' } : undefined;
+  `,
+  "do not change other feature toggles"
+);
+```
 
 ### Writing the Codemod
 
